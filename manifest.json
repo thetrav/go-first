@@ -1,6 +1,6 @@
 {
-  "name": "Touch Canvas",
-  "short_name": "TouchCanvas",
+  "name": "Go First",
+  "short_name": "GoFirst",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
