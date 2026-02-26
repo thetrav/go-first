@@ -105,7 +105,7 @@
       });
 
       setInterval(() => {
-        if (touches.size >= 2 && Date.now() - lastNewTouchTime >= 3000) {
+        if (touches.size >= 2 && Date.now() - lastNewTouchTime >= 2000) {
           const ids = Array.from(touches.keys());
           const randomId = ids[Math.floor(Math.random() * ids.length)];
           touches.get(randomId).isOrange = true;
