@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <title>Touch Canvas</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="manifest.json" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #000;
+        touch-action: none;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+    <script>
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+
+      function resize() {
+        canvas.width = window.innerWidth * devicePixelRatio;
+        canvas.height = window.innerHeight * devicePixelRatio;
+        ctx.scale(devicePixelRatio, devicePixelRatio);
+      }
+      resize();
+      window.addEventListener("resize", resize);
+
+      const touches = new Map();
+      let lastNewTouchTime = Date.now();
+
+      function draw() {
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+
+        for (const [id, touch] of touches) {
+          ctx.beginPath();
+          ctx.arc(touch.x, touch.y, 75, 0, Math.PI * 2);
+          ctx.fillStyle = touch.isOrange ? "#FFA500" : "#808080";
+          ctx.fill();
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+
+      function handleTouchStart(e) {
+        e.preventDefault();
+        for (const touch of e.changedTouches) {
+          touches.set(touch.identifier, {
+            x: touch.clientX,
+            y: touch.clientY,
+            isOrange: false,
+          });
+        }
+        lastNewTouchTime = Date.now();
+      }
+
+      function handleTouchMove(e) {
+        e.preventDefault();
+        for (const touch of e.changedTouches) {
+          if (touches.has(touch.identifier)) {
+            const t = touches.get(touch.identifier);
+            t.x = touch.clientX;
+            t.y = touch.clientY;
+          }
+        }
+      }
+
+      function handleTouchEnd(e) {
+        e.preventDefault();
+        for (const touch of e.changedTouches) {
+          touches.delete(touch.identifier);
+        }
+      }
+
+      canvas.addEventListener("touchstart", handleTouchStart, {
+        passive: false,
+      });
+      canvas.addEventListener("touchmove", handleTouchMove, { passive: false });
+      canvas.addEventListener("touchend", handleTouchEnd, { passive: false });
+      canvas.addEventListener("touchcancel", handleTouchEnd, {
+        passive: false,
+      });
+
+      setInterval(() => {
+        if (touches.size >= 2 && Date.now() - lastNewTouchTime >= 3000) {
+          const ids = Array.from(touches.keys());
+          const randomId = ids[Math.floor(Math.random() * ids.length)];
+          touches.get(randomId).isOrange = true;
+          lastNewTouchTime = Date.now();
+        }
+      }, 100);
+
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("sw.js");
+      }
+    </script>
+  </body>
+</html>
